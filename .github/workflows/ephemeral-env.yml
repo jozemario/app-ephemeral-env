@@ -41,6 +41,11 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" > $KUBECONFIG
           chmod 600 $KUBECONFIG
 
+      - name: Process values file
+        run: |
+          # Create a temporary values file with environment variables replaced
+          envsubst < values.yaml > values-processed.yaml
+
       - name: Create vcluster
         id: create-vcluster
         run: |
@@ -48,7 +53,7 @@ jobs:
             --namespace qa \
             --connect=false \
             --upgrade \
-            --values values.yaml; then
+            --values values-processed.yaml; then
             echo "::error::Failed to create vcluster"
             exit 1
           fi

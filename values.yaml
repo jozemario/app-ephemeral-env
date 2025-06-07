@@ -2,7 +2,7 @@ controlPlane:
   # Configure networking
   ingress:
     enabled: true
-    host: sample-app-${{ github.event.pull_request.number }}.mghcloud.com
+    host: sample-app-${PR_NUMBER}.mghcloud.com
     pathType: Prefix
     annotations:
       kubernetes.io/ingress.class: "traefik"
@@ -11,10 +11,10 @@ controlPlane:
       ingressClassName: traefik
       tls:
         - hosts:
-            - sample-app-${{ github.event.pull_request.number }}.mghcloud.com
+            - sample-app-${PR_NUMBER}.mghcloud.com
           secretName: wildcard-mghcloud-com-tls
       rules:
-        - host: sample-app-${{ github.event.pull_request.number }}.mghcloud.com
+        - host: sample-app-${PR_NUMBER}.mghcloud.com
           http:
             paths:
               - path: /
@@ -33,8 +33,9 @@ sync:
     nodes:
       enabled: true
       clearImageStatus: true
+
 exportKubeConfig:
-  context: pr-${{ github.event.pull_request.number }}.mghcloud.com
+  context: pr-${PR_NUMBER}.mghcloud.com
   server: https://vcluster-k8s-api.mghcloud.com
   secret:
-    name: pr-${{ github.event.pull_request.number }}.mghcloud.com-kubeconfig
+    name: pr-${PR_NUMBER}.mghcloud.com-kubeconfig
