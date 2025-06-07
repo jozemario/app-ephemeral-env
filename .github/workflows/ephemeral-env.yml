@@ -49,13 +49,24 @@ jobs:
       - name: Create vcluster
         id: create-vcluster
         run: |
-          if ! vcluster create $VCLUSTER_NAME \
-            --namespace qa \
-            --connect=false \
-            --upgrade \
-            --values values-processed.yaml; then
-            echo "::error::Failed to create vcluster"
-            exit 1
+          # Check if vcluster exists
+          if vcluster list --namespace qa | grep -q "$VCLUSTER_NAME"; then
+            echo "Upgrading existing vcluster..."
+            if ! vcluster upgrade $VCLUSTER_NAME \
+              --namespace qa \
+              --values values-processed.yaml; then
+              echo "::error::Failed to upgrade vcluster"
+              exit 1
+            fi
+          else
+            echo "Creating new vcluster..."
+            if ! vcluster create $VCLUSTER_NAME \
+              --namespace qa \
+              --connect=false \
+              --values values-processed.yaml; then
+              echo "::error::Failed to create vcluster"
+              exit 1
+            fi
           fi
 
       - name: Login to Container Registry
