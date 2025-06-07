@@ -53,6 +53,8 @@ jobs:
           # Then create the vcluster
           if ! vcluster create $VCLUSTER_NAME \
             --namespace qa \
+            --create-namespace=false \
+            --recreate \
             --connect=false \
             --upgrade \
             --values values-processed.yaml; then
