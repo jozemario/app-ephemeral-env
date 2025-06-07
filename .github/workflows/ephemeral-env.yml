@@ -1,0 +1,160 @@
+name: Ephemeral Environment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+env:
+  KUBECONFIG: /tmp/kubeconfig
+  VCLUSTER_NAME: pr-${{ github.event.pull_request.number }}
+  REGISTRY: ${{ secrets.CONTAINER_REGISTRY || 'ghcr.io' }}
+  REGISTRY_NAMESPACE: ${{ secrets.REGISTRY_NAMESPACE || github.repository_owner }}
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+
+jobs:
+  create-environment:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Install vcluster CLI
+        run: |
+          curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64"
+          chmod +x vcluster
+          sudo mv vcluster /usr/local/bin/
+
+      - name: Install DevSpace CLI
+        run: |
+          curl -L -o devspace "https://github.com/loft-sh/devspace/releases/latest/download/devspace-linux-amd64"
+          chmod +x devspace
+          sudo mv devspace /usr/local/bin/
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > $KUBECONFIG
+          chmod 600 $KUBECONFIG
+
+      - name: Create vcluster
+        id: create-vcluster
+        run: |
+          if ! vcluster create $VCLUSTER_NAME \
+            --namespace qa \
+            --connect=false \
+            --upgrade \
+            --distro k3s \
+            --values values.yaml; then
+            echo "::error::Failed to create vcluster"
+            exit 1
+          fi
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME || github.actor }}
+          password: ${{ secrets.REGISTRY_PASSWORD || secrets.GITHUB_TOKEN }}
+
+      - name: Create Registry Secret
+        if: secrets.REGISTRY_USERNAME != ''
+        run: |
+          # Get vcluster kubeconfig
+          vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG
+
+          # Create namespace if it doesn't exist
+          kubectl create namespace $VCLUSTER_NAME --dry-run=client -o yaml | kubectl apply -f -
+
+          # Create docker registry secret
+          kubectl create secret docker-registry docker-registry-secret \
+            --docker-server=${{ env.REGISTRY }} \
+            --docker-username=${{ secrets.REGISTRY_USERNAME }} \
+            --docker-password=${{ secrets.REGISTRY_PASSWORD }} \
+            --namespace $VCLUSTER_NAME \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy application to vcluster
+        id: deploy
+        run: |
+          # Get vcluster kubeconfig
+          if ! vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG; then
+            echo "::error::Failed to connect to vcluster"
+            exit 1
+          fi
+
+          # Create namespace if it doesn't exist
+          kubectl create namespace $VCLUSTER_NAME --dry-run=client -o yaml | kubectl apply -f -
+
+          # Deploy using DevSpace
+          if ! devspace deploy --kube-context $VCLUSTER_NAME --namespace $VCLUSTER_NAME; then
+            echo "::error::Failed to deploy application"
+            exit 1
+          fi
+
+          # Wait for deployment to be ready
+          echo "Waiting for deployment to be ready..."
+          kubectl rollout status deployment/sample-app -n $VCLUSTER_NAME --timeout=300s
+
+          # Wait for ingress to be ready
+          echo "Waiting for ingress to be ready..."
+          kubectl wait --for=condition=ready ingress/sample-app -n $VCLUSTER_NAME --timeout=300s
+
+      - name: Add PR comment with environment details
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const message = `🚀 Ephemeral environment created for this PR!
+
+            To access the environment:
+            1. Install DevSpace: https://devspace.sh/cli/docs/getting-started/installation
+            2. Connect to the vcluster:
+               \`\`\`bash
+               vcluster connect pr-${context.payload.pull_request.number} --namespace qa
+               \`\`\`
+            3. Start development:
+               \`\`\`bash
+               devspace dev --kube-context pr-${context.payload.pull_request.number} --namespace pr-${context.payload.pull_request.number}
+               \`\`\`
+
+            Your application is available at: https://sample-app-${context.payload.pull_request.number}.mghcloud.com
+
+            The environment will be automatically cleaned up when this PR is closed.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+      - name: Cleanup on failure
+        if: failure()
+        run: |
+          echo "Cleaning up due to failure..."
+          vcluster delete $VCLUSTER_NAME --namespace qa || true
+
+  cleanup-environment:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install vcluster CLI
+        run: |
+          curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64"
+          chmod +x vcluster
+          sudo mv vcluster /usr/local/bin/
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > $KUBECONFIG
+          chmod 600 $KUBECONFIG
+
+      - name: Delete vcluster
+        run: |
+          if ! vcluster delete $VCLUSTER_NAME --namespace qa; then
+            echo "::warning::Failed to delete vcluster, it might have been already deleted"
+          fi

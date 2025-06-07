@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - postgres.yaml
+  - configmap.yaml
+  - db-init.yaml
+  - deployment.yaml
+
+# Ensure database is initialized before the app starts
+patches:
+  - target:
+      kind: Deployment
+      name: sample-app
+    patch: |-
+      - op: add
+        path: /spec/template/spec/initContainers/0
+        value:
+          name: wait-for-db-init
+          image: postgres:14
+          command: ['sh', '-c', 'until kubectl get job db-init -o jsonpath="{.status.succeeded}" | grep -q "1"; do echo "Waiting for db-init job to complete..."; sleep 5; done;']

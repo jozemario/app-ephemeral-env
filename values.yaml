@@ -1,0 +1,34 @@
+vcluster:
+  # Use k3s as the distribution
+  distro: k3s
+
+  # Configure resources
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  # Configure storage
+  storage:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: nfs
+
+  # Configure networking
+  networking:
+    serviceType: ClusterIP
+    ingress:
+      enabled: true
+      className: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-production"
+
+  # Configure security
+  security:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
