@@ -1,20 +1,4 @@
 controlPlane:
-  # Configure resources
-  resources:
-    requests:
-      cpu: 500m
-      memory: 512Mi
-    limits:
-      cpu: 1000m
-      memory: 1Gi
-
-  # Configure storage
-  storage:
-    persistence:
-      enabled: true
-      size: 10Gi
-      storageClass: nfs
-
   # Configure networking
   ingress:
     enabled: true
@@ -41,11 +25,6 @@ controlPlane:
                     port:
                       number: 80
 
-  # Configure security
-  security:
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
 sync:
   toHost:
     serviceAccounts:
