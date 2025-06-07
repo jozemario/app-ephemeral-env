@@ -102,11 +102,11 @@ jobs:
 
           # Wait for deployment to be ready
           echo "Waiting for deployment to be ready..."
-          kubectl rollout status deployment/sample-app -n $VCLUSTER_NAME --timeout=300s
+          kubectl rollout status deployment/sample-app -n $VCLUSTER_NAME --timeout=10m
 
           # Wait for ingress to be ready
           echo "Waiting for ingress to be ready..."
-          kubectl wait --for=condition=ready ingress/sample-app -n $VCLUSTER_NAME --timeout=300s
+          kubectl wait --for=condition=ready ingress/sample-app -n $VCLUSTER_NAME --timeout=10m
 
       - name: Add PR comment with environment details
         if: success()

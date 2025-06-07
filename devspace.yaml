@@ -10,38 +10,8 @@ vars:
   REGISTRY_NAMESPACE:
     source: env
 
-dev:
-  ports:
-    - port: 8080
-      remotePort: 8080
-    - port: 9229
-      remotePort: 9229
-  sync:
-    - localSubPath: ./src
-      containerPath: /app/src
-      excludePaths:
-        - node_modules
-        - .git
-  terminal:
-    command: npm run dev
-  env:
-    - name: NODE_ENV
-      value: development
-    - name: DEBUG
-      value: express:*
-
-images:
-  sample-app:
-    image: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app
-    tags:
-      - ${PR_NUMBER}
-    dockerfile: ./Dockerfile
-    context: ./
-    buildArgs:
-      - NODE_ENV=development
-
 deployments:
-  - name: sample-app
+  sample-app:
     kubectl:
       manifests:
         - k8s/deployment.yaml
@@ -54,3 +24,29 @@ deployments:
         - op: replace
           path: /spec/template/spec/containers/0/image
           value: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
+
+dev:
+  ports:
+    - port: "8080:8080"
+    - port: "9229:9229"
+  sync:
+    - localSubPath: ./src
+      containerPath: /app/src
+      excludePaths:
+        - node_modules
+        - .git
+  terminal:
+    command: ["npm", "run", "dev"]
+  env:
+    NODE_ENV: development
+    DEBUG: express:*
+
+images:
+  sample-app:
+    buildArgs:
+      NODE_ENV: development
+    context: ./
+    dockerfile: ./Dockerfile
+    image: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app
+    tags:
+      - ${PR_NUMBER}
