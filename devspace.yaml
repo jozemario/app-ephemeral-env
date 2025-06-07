@@ -20,8 +20,12 @@ deployments:
         - k8s/db-init.yaml
       kustomize: true
       patches:
-        - op: replace
-          path: /spec/template/spec/containers/0/image
+        - target:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: sample-app
+          op: replace
+          path: spec.template.spec.containers[0].image
           value: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
 
 dev:
