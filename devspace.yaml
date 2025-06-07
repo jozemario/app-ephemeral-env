@@ -26,6 +26,7 @@ deployments:
 
 dev:
   sample-app:
+    imageSelector: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
     ports:
       - port: "8080:8080"
       - port: "9229:9229"
