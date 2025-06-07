@@ -1,5 +1,4 @@
-vcluster:
-  # Use k3s as the distribution
+controlPlane:
   distro: k3s
 
   # Configure resources

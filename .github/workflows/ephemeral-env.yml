@@ -46,7 +46,6 @@ jobs:
             --namespace qa \
             --connect=false \
             --upgrade \
-            --distro k3s \
             --values values.yaml; then
             echo "::error::Failed to create vcluster"
             exit 1
