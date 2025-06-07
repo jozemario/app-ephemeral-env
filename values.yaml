@@ -35,11 +35,6 @@ sync:
       clearImageStatus: true
     storageClasses:
       enabled: true
-      patch:
-        enabled: true
-        patch:
-          spec:
-            storageClass: nfs
 
 exportKubeConfig:
   context: pr-${PR_NUMBER}.mghcloud.com
