@@ -49,16 +49,12 @@ jobs:
       - name: Create vcluster
         id: create-vcluster
         run: |
-          # First clean up any existing vcluster if it exists
-          if vcluster list --namespace qa | grep -q "$VCLUSTER_NAME"; then
-            echo "Deleting existing vcluster..."
-            vcluster delete $VCLUSTER_NAME --namespace qa
-          fi
 
           # Then create the vcluster
           if ! vcluster create $VCLUSTER_NAME \
             --namespace qa \
             --connect=false \
+            --upgrade \
             --values values-processed.yaml; then
             echo "::error::Failed to create vcluster"
             exit 1
@@ -159,6 +155,8 @@ jobs:
           curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64"
           chmod +x vcluster
           sudo mv vcluster /usr/local/bin/
+          vcluster upgrade
+          vcluster --version
 
       - name: Configure kubectl
         run: |
