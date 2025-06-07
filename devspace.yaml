@@ -49,3 +49,6 @@ images:
     image: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app
     tags:
       - ${PR_NUMBER}
+
+localRegistry:
+  localbuild: true
