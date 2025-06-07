@@ -27,6 +27,8 @@ jobs:
           curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64"
           chmod +x vcluster
           sudo mv vcluster /usr/local/bin/
+          vcluster upgrade
+          vcluster --version
 
       - name: Install DevSpace CLI
         run: |

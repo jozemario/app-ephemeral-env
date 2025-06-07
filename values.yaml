@@ -1,6 +1,4 @@
 controlPlane:
-  distro: k3s
-
   # Configure resources
   resources:
     requests:
