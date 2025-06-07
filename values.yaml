@@ -16,16 +16,46 @@ controlPlane:
       storageClass: nfs
 
   # Configure networking
-  networking:
-    serviceType: ClusterIP
-    ingress:
-      enabled: true
-      className: traefik
-      annotations:
-        cert-manager.io/cluster-issuer: "letsencrypt-production"
+  ingress:
+    enabled: true
+    host: sample-app-${{ github.event.pull_request.number }}.mghcloud.com
+    pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: "traefik"
+      traefik.ingress.kubernetes.io/ssl: "true"
+    spec:
+      ingressClassName: traefik
+      tls:
+        - hosts:
+            - sample-app-${{ github.event.pull_request.number }}.mghcloud.com
+          secretName: wildcard-mghcloud-com-tls
+      rules:
+        - host: sample-app-${{ github.event.pull_request.number }}.mghcloud.com
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: sample-app
+                    port:
+                      number: 80
 
   # Configure security
   security:
     runAsUser: 1000
     runAsGroup: 1000
     fsGroup: 1000
+sync:
+  toHost:
+    serviceAccounts:
+      enabled: true
+  fromHost:
+    nodes:
+      enabled: true
+      clearImageStatus: true
+exportKubeConfig:
+  context: pr-${{ github.event.pull_request.number }}.mghcloud.com
+  server: https://vcluster-k8s-api.mghcloud.com
+  secret:
+    name: pr-${{ github.event.pull_request.number }}.mghcloud.com-kubeconfig
