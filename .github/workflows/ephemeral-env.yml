@@ -53,7 +53,8 @@ jobs:
             --namespace qa \
             --connect=false \
             --upgrade \
-            --values values-processed.yaml; then
+            --values values-processed.yaml \
+            --timeout 10m; then
             echo "::error::Failed to create vcluster"
             exit 1
           fi
@@ -69,7 +70,7 @@ jobs:
         if: ${{ env.REGISTRY != 'ghcr.io' }}
         run: |
           # Get vcluster kubeconfig
-          vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG
+          vcluster connect $VCLUSTER_NAME --namespace qa --print > $KUBECONFIG
 
           # Create namespace if it doesn't exist
           kubectl create namespace $VCLUSTER_NAME --dry-run=client -o yaml | kubectl apply -f -
@@ -86,7 +87,7 @@ jobs:
         id: deploy
         run: |
           # Get vcluster kubeconfig
-          if ! vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG; then
+          if ! vcluster connect $VCLUSTER_NAME --namespace qa --print > $KUBECONFIG; then
             echo "::error::Failed to connect to vcluster"
             exit 1
           fi

@@ -2,77 +2,33 @@ version: v2beta1
 name: sample-app-dev
 
 vars:
-  - name: PR_NUMBER
+  PR_NUMBER:
     source: env
-    default: ""
-  - name: REGISTRY
+  REGISTRY:
     source: env
-    default: "ghcr.io"
-  - name: REGISTRY_NAMESPACE
+    default: ghcr.io
+  REGISTRY_NAMESPACE:
     source: env
-    default: ""
 
 dev:
   ports:
-    - port: 8080:8080
-      selector:
-        app: sample-app
-    - port: 9229:9229 # Node.js debug port
-      selector:
-        app: sample-app
-
+    - port: 8080
+      remotePort: 8080
+    - port: 9229
+      remotePort: 9229
   sync:
-    - path: ./
-      containerPath: /app
-      selector:
-        app: sample-app
+    - localSubPath: ./src
+      containerPath: /app/src
       excludePaths:
         - node_modules
         - .git
-      downloadExcludePaths:
-        - node_modules
-        - .git
-      uploadExcludePaths:
-        - node_modules
-        - .git
-
   terminal:
-    selector:
-      app: sample-app
-    command: /bin/sh
-
-  logs:
-    selector:
-      app: sample-app
-    follow: true
-    timestamps: true
-
-  debug:
-    - imageSelector: sample-app
-      command: ["node", "--inspect=0.0.0.0:9229", "server.js"]
-      ports:
-        - port: 9229
-          remotePort: 9229
-
-deployments:
-  - name: sample-app
-    kubectl:
-      manifests:
-        - k8s/deployment.yaml
-      patches:
-        - op: replace
-          path: /spec/template/spec/containers/0/image
-          value: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
-        - op: add
-          path: /spec/template/spec/containers/0/env/-
-          value:
-            name: NODE_ENV
-            value: "development"
-        - op: add
-          path: /spec/template/spec/containers/0/env/-
-          value:
-            name: DEBUG
-            value: "express:*"
+    command: npm run dev
+  env:
+    - name: NODE_ENV
+      value: development
+    - name: DEBUG
+      value: express:*
 
 images:
   sample-app:
@@ -83,3 +39,18 @@ images:
     context: ./
     buildArgs:
       - NODE_ENV=development
+
+deployments:
+  - name: sample-app
+    kubectl:
+      manifests:
+        - k8s/deployment.yaml
+        - k8s/postgres.yaml
+        - k8s/configmap.yaml
+        - k8s/db-init.yaml
+      kustomize:
+        path: ./k8s
+      patches:
+        - op: replace
+          path: /spec/template/spec/containers/0/image
+          value: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
