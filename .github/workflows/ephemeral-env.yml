@@ -60,9 +60,12 @@ jobs:
             fi
           else
             echo "Creating new vcluster..."
+             
+            # Create the vcluster with --install flag
             if ! vcluster create $VCLUSTER_NAME \
               --namespace qa \
               --connect=false \
+              --install \
               --values values-processed.yaml; then
               echo "::error::Failed to create vcluster"
               exit 1
