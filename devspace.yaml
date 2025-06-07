@@ -35,12 +35,10 @@ dev:
           - node_modules
           - .git
     terminal:
-      command: ["npm", "run", "dev"]
+      command: "npm run dev"
 
 images:
   sample-app:
-    buildArgs:
-      NODE_ENV: development
     context: ./
     dockerfile: ./Dockerfile
     image: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app
