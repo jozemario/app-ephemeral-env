@@ -49,7 +49,7 @@ jobs:
       - name: Create vcluster
         id: create-vcluster
         run: |
-          helm upgrade --install
+
           # Then create the vcluster
           if ! vcluster create $VCLUSTER_NAME \
             --namespace qa \
