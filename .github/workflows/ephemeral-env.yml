@@ -53,8 +53,7 @@ jobs:
             --namespace qa \
             --connect=false \
             --upgrade \
-            --values values-processed.yaml \
-            --timeout 10m; then
+            --values values-processed.yaml; then
             echo "::error::Failed to create vcluster"
             exit 1
           fi
