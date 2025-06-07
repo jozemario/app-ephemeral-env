@@ -18,28 +18,24 @@ deployments:
         - k8s/postgres.yaml
         - k8s/configmap.yaml
         - k8s/db-init.yaml
-      kustomize:
-        path: ./k8s
+      kustomize: true
       patches:
         - op: replace
           path: /spec/template/spec/containers/0/image
           value: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
 
 dev:
-  ports:
-    - port: "8080:8080"
-    - port: "9229:9229"
-  sync:
-    - localSubPath: ./src
-      containerPath: /app/src
-      excludePaths:
-        - node_modules
-        - .git
-  terminal:
-    command: ["npm", "run", "dev"]
-  env:
-    NODE_ENV: development
-    DEBUG: express:*
+  sample-app:
+    ports:
+      - port: "8080:8080"
+      - port: "9229:9229"
+    sync:
+      - path: "./src:/app/src"
+        excludePaths:
+          - node_modules
+          - .git
+    terminal:
+      command: ["npm", "run", "dev"]
 
 images:
   sample-app:

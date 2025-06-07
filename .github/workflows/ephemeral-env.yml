@@ -56,6 +56,7 @@ jobs:
             --create-namespace=false \
             --recreate \
             --connect=false \
+            --upgrade \
             --values values-processed.yaml; then
             echo "::error::Failed to create vcluster"
             exit 1
