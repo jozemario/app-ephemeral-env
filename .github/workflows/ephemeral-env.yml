@@ -76,7 +76,7 @@ jobs:
             local max_attempts=30
             local attempt=1
             while [ $attempt -le $max_attempts ]; do
-              if vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG --print > /dev/null 2>&1; then
+              if vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG; then
                 echo "vcluster is ready!"
                 return 0
               fi
@@ -95,7 +95,7 @@ jobs:
           fi
 
           # Get vcluster kubeconfig
-          vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG --print > $KUBECONFIG
+          vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG
 
           # Create namespace if it doesn't exist
           kubectl create namespace $VCLUSTER_NAME --dry-run=client -o yaml | kubectl apply -f -
