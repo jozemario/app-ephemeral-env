@@ -71,8 +71,31 @@ jobs:
       - name: Create Registry Secret
         if: ${{ env.REGISTRY != 'ghcr.io' }}
         run: |
+          # Function to wait for vcluster to be ready
+          wait_for_vcluster() {
+            local max_attempts=30
+            local attempt=1
+            while [ $attempt -le $max_attempts ]; do
+              if vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG --print > /dev/null 2>&1; then
+                echo "vcluster is ready!"
+                return 0
+              fi
+              echo "Attempt $attempt/$max_attempts: Waiting for vcluster to be ready..."
+              sleep 10
+              attempt=$((attempt + 1))
+            done
+            echo "Failed to connect to vcluster after $max_attempts attempts"
+            return 1
+          }
+
+          # Wait for vcluster to be ready
+          if ! wait_for_vcluster; then
+            echo "::error::Failed to connect to vcluster"
+            exit 1
+          fi
+
           # Get vcluster kubeconfig
-          vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG
+          vcluster connect $VCLUSTER_NAME --namespace qa --kube-config $KUBECONFIG --print > $KUBECONFIG
 
           # Create namespace if it doesn't exist
           kubectl create namespace $VCLUSTER_NAME --dry-run=client -o yaml | kubectl apply -f -
