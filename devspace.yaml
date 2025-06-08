@@ -14,10 +14,7 @@ deployments:
   sample-app:
     kubectl:
       manifests:
-        - k8s/deployment.yaml
-        - k8s/postgres.yaml
-        - k8s/configmap.yaml
-        - k8s/db-init.yaml
+        - k8s/
       kustomize: true
       patches:
         - target:
@@ -35,7 +32,7 @@ dev:
       - port: "8080:8080"
       - port: "9229:9229"
     sync:
-      - path: "./src:/app/src"
+      - path: "./src:/app"
         excludePaths:
           - node_modules
           - .git
