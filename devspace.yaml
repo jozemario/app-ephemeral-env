@@ -10,6 +10,11 @@ vars:
   REGISTRY_NAMESPACE:
     source: env
 
+# Add registry configuration
+registry:
+  useLocalRegistry: false
+  useInClusterRegistry: false
+
 deployments:
   sample-app:
     kubectl:
