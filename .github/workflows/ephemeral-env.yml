@@ -120,8 +120,13 @@ jobs:
           # Create namespace if it doesn't exist
           kubectl create namespace $VCLUSTER_NAME --dry-run=client -o yaml | kubectl apply -f -
 
-          # Deploy using DevSpace
-          if ! devspace deploy --namespace $VCLUSTER_NAME; then
+          # Deploy using DevSpace with variable substitution
+          if ! devspace deploy \
+            --namespace $VCLUSTER_NAME \
+            --var PR_NUMBER=$PR_NUMBER \
+            --var REGISTRY=${{ env.REGISTRY }} \
+            --var REGISTRY_NAMESPACE=${{ env.REGISTRY_NAMESPACE }} \
+            --var DOMAIN=mghcloud.com; then
             echo "::error::Failed to deploy application"
             exit 1
           fi
