@@ -24,6 +24,20 @@ deployments:
           op: replace
           path: spec.template.spec.containers[0].image
           value: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
+        - target:
+            apiVersion: networking.k8s.io/v1
+            kind: Ingress
+            name: sample-app
+          op: replace
+          path: spec.rules[0].host
+          value: sample-app-${PR_NUMBER}.mghcloud.com
+        - target:
+            apiVersion: networking.k8s.io/v1
+            kind: Ingress
+            name: sample-app
+          op: replace
+          path: spec.tls[0].hosts[0]
+          value: sample-app-${PR_NUMBER}.mghcloud.com
 
 dev:
   sample-app:

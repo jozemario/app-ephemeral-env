@@ -123,7 +123,8 @@ jobs:
           # Deploy using DevSpace with variable substitution
           if ! devspace deploy \
             --namespace $VCLUSTER_NAME \
-            --var PR_NUMBER=$PR_NUMBER; then
+            --var PR_NUMBER=$PR_NUMBER \
+            --kustomize-args "--load-restrictor=LoadRestrictionsNone"; then
             echo "::error::Failed to deploy application"
             exit 1
           fi
