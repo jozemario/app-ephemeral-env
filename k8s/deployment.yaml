@@ -53,6 +53,7 @@ metadata:
   name: sample-app
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
+    kubernetes.io/ingress.class: "traefik"
   labels:
     app: sample-app
 spec:
