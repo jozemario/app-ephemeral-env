@@ -14,15 +14,6 @@ spec:
     spec:
       imagePullSecrets:
         - name: docker-registry-secret
-      initContainers:
-        - name: init-db
-          image: postgres:14
-          command:
-            [
-              "sh",
-              "-c",
-              "until pg_isready -h postgres -p 5432; do echo waiting for postgres; sleep 2; done;",
-            ]
       containers:
         - name: sample-app
           image: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
@@ -68,9 +59,9 @@ spec:
   tls:
     - secretName: sample-app-tls
       hosts:
-        - sample-app-$(PR_NUMBER).mghcloud.com
+        - sample-app-${REGISTRY}.mghcloud.com
   rules:
-    - host: sample-app-$(PR_NUMBER).mghcloud.com
+    - host: sample-app-${REGISTRY}.mghcloud.com
       http:
         paths:
           - path: /
