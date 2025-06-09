@@ -53,13 +53,12 @@ metadata:
   name: sample-app
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
-    kubernetes.io/ingress.class: "traefik"
   labels:
     app: sample-app
 spec:
   ingressClassName: traefik
   tls:
-    - secretName: wildcard-mghcloud-com-tls
+    - secretName: sample-app-mghcloud-com-tls
       hosts:
         - sample-app-${PR_NUMBER}.mghcloud.com
   rules:
