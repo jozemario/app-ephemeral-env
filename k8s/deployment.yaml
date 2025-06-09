@@ -54,14 +54,13 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-production"
 spec:
   tls:
-    - secretName: sample-app-tls
+    - secretName: wildcard-mghcloud-com-tls
       hosts:
-        - sample-app-${REGISTRY}.mghcloud.com
+        - sample-app-${PR_NUMBER}.mghcloud.com
   rules:
-    - host: sample-app-${REGISTRY}.mghcloud.com
+    - host: sample-app-${PR_NUMBER}.mghcloud.com
       http:
         paths:
           - path: /

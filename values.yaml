@@ -35,6 +35,8 @@ sync:
       clearImageStatus: true
     storageClasses:
       enabled: true
+    ingress:
+      enabled: true
 
 exportKubeConfig:
   context: pr-${PR_NUMBER}.mghcloud.com
