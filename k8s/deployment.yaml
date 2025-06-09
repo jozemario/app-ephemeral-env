@@ -43,7 +43,7 @@ spec:
   selector:
     app: sample-app
   ports:
-    - port: 80
+    - port: 8080
       targetPort: 8080
   type: ClusterIP
 ---
@@ -52,9 +52,12 @@ kind: Ingress
 metadata:
   name: sample-app
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    kubernetes.io/ingress.class: "traefik"
+  labels:
+    app: sample-app
 spec:
+  ingressClassName: traefik
   tls:
     - secretName: wildcard-mghcloud-com-tls
       hosts:
@@ -69,4 +72,4 @@ spec:
               service:
                 name: sample-app
                 port:
-                  number: 80
+                  number: 8080
