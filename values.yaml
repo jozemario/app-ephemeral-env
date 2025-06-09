@@ -12,7 +12,7 @@ controlPlane:
       tls:
         - hosts:
             - sample-app-${PR_NUMBER}.mghcloud.com
-          secretName: wildcard-mghcloud-com-tls
+          secretName: sample-app-mghcloud-com-tls
       rules:
         - host: sample-app-${PR_NUMBER}.mghcloud.com
           http:
@@ -23,7 +23,7 @@ controlPlane:
                   service:
                     name: sample-app
                     port:
-                      number: 80
+                      number: 8080
 
 sync:
   toHost:
