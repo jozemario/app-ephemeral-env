@@ -58,9 +58,9 @@ spec:
   tls:
     - secretName: wildcard-mghcloud-com-tls
       hosts:
-        - sample-app-${PR_NUMBER}.mghcloud.com
+        - sample-app-$(PR_NUMBER).mghcloud.com
   rules:
-    - host: sample-app-${PR_NUMBER}.mghcloud.com
+    - host: sample-app-$(PR_NUMBER).mghcloud.com
       http:
         paths:
           - path: /
