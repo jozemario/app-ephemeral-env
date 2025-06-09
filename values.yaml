@@ -4,7 +4,6 @@ controlPlane:
     enabled: true
     host: sample-app-${PR_NUMBER}.mghcloud.com
     pathType: Prefix
-    name: sample-app
     annotations:
       kubernetes.io/ingress.class: "traefik"
       traefik.ingress.kubernetes.io/ssl: "true"
