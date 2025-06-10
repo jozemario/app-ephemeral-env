@@ -57,7 +57,7 @@ When you create a PR, GitHub Actions will automatically:
 
 ### 4. Local Development
 
-Once the PR is created, you can develop locally:
+Once the PR is created, you can develop locally :
 
 ```bash
 # Login to container registry (if using private registry)
