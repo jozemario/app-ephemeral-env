@@ -14,15 +14,6 @@ spec:
     spec:
       imagePullSecrets:
         - name: docker-registry-secret
-      initContainers:
-        - name: init-db
-          image: postgres:14
-          command:
-            [
-              "sh",
-              "-c",
-              "until pg_isready -h postgres -p 5432; do echo waiting for postgres; sleep 2; done;",
-            ]
       containers:
         - name: sample-app
           image: ${REGISTRY}/${REGISTRY_NAMESPACE}/sample-app:${PR_NUMBER}
@@ -52,50 +43,6 @@ spec:
   selector:
     app: sample-app
   ports:
-    - port: 80
+    - port: 8080
       targetPort: 8080
   type: ClusterIP
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: sample-app
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: sample-app-headers@kubernetescrd
-    cert-manager.io/cluster-issuer: "letsencrypt-production"
-spec:
-  tls:
-    - secretName: sample-app-tls
-      hosts:
-        - sample-app-${PR_NUMBER}.mghcloud.com
-  rules:
-    - host: sample-app-${PR_NUMBER}.mghcloud.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: sample-app
-                port:
-                  number: 80
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: sample-app-headers
-spec:
-  headers:
-    customResponseHeaders:
-      X-Frame-Options: "DENY"
-      X-Content-Type-Options: "nosniff"
-      X-XSS-Protection: "1; mode=block"
-      Strict-Transport-Security: "max-age=31536000; includeSubDomains"
-    browserXssFilter: true
-    contentTypeNosniff: true
-    forceSTSHeader: true
-    stsIncludeSubdomains: true
-    stsPreload: true
-    stsSeconds: 31536000

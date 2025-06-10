@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: app-config
 data:
-  DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/sampleapp"
+  DATABASE_URL: "postgresql://mghcloud:change_me@201.205.178.45:30204/sampleapp"
   PORT: "8080"
